@@ -1,4 +1,4 @@
-package org.example.builder;
+package org.example.model.builder;
 
 import org.example.model.entities.Reservation;
 
@@ -12,7 +12,7 @@ public class StandardReservationBuilder implements ReservationBuilder{
     private LocalDateTime endTime;
     private List<Integer> tableIds = new ArrayList<>();
     private int peopleTotal;
-    private String specialSetup = "";
+    private String specialSetup = "none";
 
     public StandardReservationBuilder setCustomerId(int customerId) {
         this.customerId = customerId;
@@ -26,11 +26,6 @@ public class StandardReservationBuilder implements ReservationBuilder{
 
     public StandardReservationBuilder setEndTime(LocalDateTime endTime) {
         this.endTime = endTime;
-        return this;
-    }
-
-    public StandardReservationBuilder addTableId(int tableId) {
-        this.tableIds.add(tableId);
         return this;
     }
 
@@ -54,7 +49,7 @@ public class StandardReservationBuilder implements ReservationBuilder{
         reservation.setCustomerId(this.customerId);
         reservation.setStartTime(this.startTime);
         reservation.setEndTime(this.endTime);
-        reservation.setTableIds(this.tableIds.toArray(new Integer[0]));
+        reservation.setTableIds(this.tableIds);
         reservation.setPeopleTotal(this.peopleTotal);
         reservation.setSpecialSetup(this.specialSetup);
         return reservation;
