@@ -1,5 +1,6 @@
 package org.example.model.dao;
 
+import org.example.model.entities.Customer;
 import org.example.model.entities.Table;
 
 import java.sql.Connection;
@@ -9,14 +10,14 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TableDAO {
+public class TableDAO implements DAO<Table>{
     private Connection connection;
 
     public TableDAO(Connection connection) {
         this.connection = connection;
     }
 
-    public Table getTable(int id) {
+    public Table get(int id) {
         String query = "SELECT * FROM tables WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
@@ -38,18 +39,21 @@ public class TableDAO {
         return null;
     }
 
-    public List<Table> getAllTables() {
+    public List<Table> getAll() {
         List<Table> tables = new ArrayList<>();
-        String query = "SELECT * FROM tables";
+        String query = "SELECT * FROM tables ORDER BY capacity";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             ResultSet resultSet = preparedStatement.executeQuery();
             while (resultSet.next()) {
                 int id = resultSet.getInt("id");
                 int capacity = resultSet.getInt("capacity");
+                boolean availability = resultSet.getBoolean("available");
+
 
                 Table table = new Table();
                 table.setId(id);
                 table.setCapacity(capacity);
+                table.setAvailable(availability);
 
                 tables.add(table);
             }
@@ -59,24 +63,29 @@ public class TableDAO {
         return tables;
     }
 
-    public void insertTable(Table table) {
-        String query = "INSERT INTO tables (id, capacity) VALUES (?, ?)";
+    public int insert(Table table) {
+        String query = "INSERT INTO tables (capacity) VALUES (?) RETURNING id";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, table.getId());
-            preparedStatement.setInt(2, table.getCapacity());
-
-            preparedStatement.executeUpdate();
+            preparedStatement.setInt(1, table.getCapacity());
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt(1);
+                } else {
+                    throw new SQLException("Creating table failed, no ID obtained.");
+                }
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error inserting table", e);
         }
     }
 
-    public void updateTable(Table table) {
+
+    public void update(Table table) {
         String query = "UPDATE tables SET capacity = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, table.getCapacity());
             preparedStatement.setInt(2, table.getId());
-
+            preparedStatement.setBoolean(3,table.isAvailable());
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -84,11 +93,10 @@ public class TableDAO {
         }
     }
 
-    public void deleteTable(int id) {
+    public void delete(int id) {
         String query = "DELETE FROM tables WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
-
             preparedStatement.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -97,7 +105,7 @@ public class TableDAO {
 
     public List<Table> getAvailableTables() {
         List<Table> availableTables = new ArrayList<>();
-        String query = "SELECT * FROM tables WHERE available = true";
+        String query = "SELECT * FROM tables WHERE available = true ORDER BY capacity";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 while (resultSet.next()) {

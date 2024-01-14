@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class CustomerDAO {
+public class CustomerDAO implements DAO<Customer>{
 
     private Connection connection;
 
@@ -17,14 +17,14 @@ public class CustomerDAO {
         this.connection = connection;
     }
 
-    public int insertCustomer(Customer customer) {
+    public int insert(Customer customer) {
         String query = "INSERT INTO customers (name, contact_info) VALUES (?, ?) RETURNING id";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, customer.getName());
             preparedStatement.setString(2, customer.getContactInfo());
             try (ResultSet resultSet = preparedStatement.executeQuery()) {
                 if (resultSet.next()) {
-                    return resultSet.getInt(1); // Zwróć wygenerowane ID
+                    return resultSet.getInt(1);
                 } else {
                     throw new SQLException("Creating customer failed, no ID obtained.");
                 }
@@ -34,7 +34,7 @@ public class CustomerDAO {
         }
     }
 
-    public Customer getCustomer(int id) {
+    public Customer get(int id) {
         String query = "SELECT * FROM customers WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
@@ -49,7 +49,7 @@ public class CustomerDAO {
         return null;
     }
 
-    public List<Customer> getAllCustomers() {
+    public List<Customer> getAll() {
         List<Customer> customers = new ArrayList<>();
         String query = "SELECT * FROM customers";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query);
@@ -63,7 +63,7 @@ public class CustomerDAO {
         return customers;
     }
 
-    public void updateCustomer(Customer customer) throws SQLException {
+    public void update(Customer customer) {
         String query = "UPDATE customers SET name = ?, contact_info = ? WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setString(1, customer.getName());
@@ -75,7 +75,7 @@ public class CustomerDAO {
         }
     }
 
-    public void deleteCustomer(int id) {
+    public void delete(int id) {
         String query = "DELETE FROM customers WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
@@ -125,4 +125,5 @@ public class CustomerDAO {
         }
         return null;
     }
+
 }

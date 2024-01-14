@@ -2,18 +2,19 @@ package org.example.model.dao;
 import org.example.model.entities.Reservation;
 
 import java.sql.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 
-public class ReservationDAO {
+public class ReservationDAO implements DAO<Reservation>{
     private Connection connection;
 
     public ReservationDAO(Connection connection) {
         this.connection = connection;
     }
 
-    public Reservation getReservation(int id) {
+    public Reservation get(int id) {
         String query = "SELECT * FROM reservations WHERE id = ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, id);
@@ -29,8 +30,7 @@ public class ReservationDAO {
         return null;
     }
 
-
-    public List<Reservation> getAllReservations() {
+    public List<Reservation> getAll() {
         List<Reservation> reservations = new ArrayList<>();
         String query = "SELECT * FROM reservations";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
@@ -44,6 +44,7 @@ public class ReservationDAO {
         return reservations;
 
     }
+
 
     public void insertReservation(Reservation reservation, List<Integer> tableIds) {
         String insertReservationQuery = "INSERT INTO reservations (customer_id, start_time, end_time) VALUES (?, ?, ?)";
@@ -110,7 +111,7 @@ public class ReservationDAO {
         }
     }
 
-    public void updateReservation(Reservation reservation, List<Integer> newTableIds) {
+    public void update(Reservation reservation, List<Integer> newTableIds) {
         String query = "UPDATE reservations SET customer_id = ?, start_time = ?, end_time = ? WHERE id = ?";
         try {
             connection.setAutoCommit(false);
@@ -148,17 +149,24 @@ public class ReservationDAO {
         }
     }
 
-    public void deleteReservation(int id) {
-        String query = "DELETE FROM reservations WHERE id = ?";
+    public void delete(int id) {
+        String queryDeleteReservation = "DELETE FROM reservations WHERE id = ?";
+        String queryDeleteReservationTables = "DELETE FROM reservation_tables WHERE reservation_id = ?";
+        String queryUpdateTables = "UPDATE tables SET available = TRUE WHERE id IN (SELECT table_id FROM reservation_tables WHERE reservation_id = ?)";
         try {
             connection.setAutoCommit(false);
 
-            try (PreparedStatement deleteRelationStatement = connection.prepareStatement("DELETE FROM reservation_tables WHERE reservation_id = ?")) {
+            try (PreparedStatement updateTablesStatement = connection.prepareStatement(queryUpdateTables)) {
+                updateTablesStatement.setInt(1, id);
+                updateTablesStatement.executeUpdate();
+            }
+
+            try (PreparedStatement deleteRelationStatement = connection.prepareStatement(queryDeleteReservationTables)) {
                 deleteRelationStatement.setInt(1, id);
                 deleteRelationStatement.executeUpdate();
             }
 
-            try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryDeleteReservation)) {
                 preparedStatement.setInt(1, id);
                 preparedStatement.executeUpdate();
             }
@@ -174,7 +182,6 @@ public class ReservationDAO {
             throw new RuntimeException("Error deleting reservation", e);
         }
     }
-
     private Reservation mapRowToReservation(ResultSet resultSet) throws SQLException {
         Reservation reservation = new Reservation();
         reservation.setId(resultSet.getInt("id"));
@@ -182,19 +189,53 @@ public class ReservationDAO {
         reservation.setStartTime(resultSet.getTimestamp("start_time").toLocalDateTime());
         reservation.setEndTime(resultSet.getTimestamp("end_time").toLocalDateTime());
         reservation.setTableIds(getTableIdsForReservation(reservation.getId()));
+
         return reservation;
     }
 
-    private Integer[] getTableIdsForReservation(int reservationId) throws SQLException {
+    private List<Integer> getTableIdsForReservation(int reservationId) throws SQLException {
         List<Integer> tableIds = new ArrayList<>();
         String query = "SELECT table_id FROM reservation_tables WHERE reservation_id = ?";
-        PreparedStatement preparedStatement = connection.prepareStatement(query);
-        preparedStatement.setInt(1, reservationId);
-        ResultSet resultSet = preparedStatement.executeQuery();
-        while (resultSet.next()) {
-            tableIds.add(resultSet.getInt("table_id"));
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, reservationId);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                while (resultSet.next()) {
+                    tableIds.add(resultSet.getInt("table_id"));
+                }
+            }
         }
-        preparedStatement.close();
-        return tableIds.toArray(new Integer[0]);
+        return tableIds;
+    }
+
+    public boolean isReservationTimeAvailable(LocalDateTime startTime, LocalDateTime endTime) {
+        String query = "SELECT COUNT(*) AS reservation_count FROM reservations "
+                + "WHERE (start_time < ? AND end_time > ?) OR (start_time < ? AND end_time > ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setTimestamp(1, Timestamp.valueOf(endTime));
+            preparedStatement.setTimestamp(2, Timestamp.valueOf(startTime));
+            preparedStatement.setTimestamp(3, Timestamp.valueOf(endTime));
+            preparedStatement.setTimestamp(4, Timestamp.valueOf(startTime));
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+                if (resultSet.next()) {
+                    return resultSet.getInt("reservation_count") == 0;
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error checking reservation time availability", e);
+        }
+
+        return true;
+    }
+
+
+    @Override
+    public int insert(Reservation reservation) {
+        return 0;
+    }
+
+    @Override
+    public void update(Reservation reservation) {
+
     }
 }
