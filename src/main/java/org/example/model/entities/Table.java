@@ -1,10 +1,11 @@
 package org.example.model.entities;
 
 public class Table {
-    //occupy table,free table??
     private int id;
     private int capacity;
-    private boolean available=true;
+    private boolean available = true;
+
+    public static final int MAX_TABLE_CAPACITY = 12;
 
     public int getId() {
         return id;

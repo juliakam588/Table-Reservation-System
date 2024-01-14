@@ -1,15 +1,14 @@
 package org.example.model.entities;
 
-import java.time.LocalDate;
-
 import java.time.LocalDateTime;
+import java.util.List;
 
 public class Reservation {
     private int id;
     private int customerId;
     private LocalDateTime startTime;
     private LocalDateTime endTime;
-    private Integer[] tableIds;
+    private List<Integer> tableIds;
     private int peopleTotal;
     private String specialSetup;
 
@@ -46,9 +45,10 @@ public class Reservation {
         this.endTime = endTime;
     }
 
-    public void setTableIds(Integer[] tableIds) {
+    public void setTableIds(List<Integer> tableIds) {
+        this.tableIds = tableIds;
     }
-    public Integer[] getTableIds() {
+    public List<Integer> getTableIds() {
         return tableIds;
     }
 
