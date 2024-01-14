@@ -32,11 +32,11 @@ public class CustomerService {
     }
 
     public void deleteCustomer(int customerId) {
-        customerDAO.deleteCustomer(customerId);
+        customerDAO.delete(customerId);
     }
 
     public List<Customer> getAllCustomers() {
-        return customerDAO.getAllCustomers();
+        return customerDAO.getAll();
     }
 
     private boolean isValidInput(String name, String contactInfo) {
@@ -65,7 +65,7 @@ public class CustomerService {
         newCustomer.setName(name);
         newCustomer.setContactInfo(contactInfo);
 
-        customerDAO.insertCustomer(newCustomer);
+        customerDAO.insert(newCustomer);
         System.out.println("Customer added successfully.");
         return true;
     }
