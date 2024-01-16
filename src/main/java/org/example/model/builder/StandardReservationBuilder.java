@@ -11,8 +11,9 @@ public class StandardReservationBuilder implements ReservationBuilder{
     private LocalDateTime startTime;
     private LocalDateTime endTime;
     private List<Integer> tableIds = new ArrayList<>();
-    private int peopleTotal;
-    private String specialSetup = "none";
+    private String specialSetup;
+    private boolean isGroup;
+    private String customerName;
 
     public StandardReservationBuilder setCustomerId(int customerId) {
         this.customerId = customerId;
@@ -34,13 +35,19 @@ public class StandardReservationBuilder implements ReservationBuilder{
         return this;
     }
 
-    public StandardReservationBuilder setPeopleTotal(int peopleTotal) {
-        this.peopleTotal = peopleTotal;
-        return this;
-    }
 
     public StandardReservationBuilder setSpecialSetup(String specialSetup) {
         this.specialSetup = specialSetup;
+        return this;
+    }
+
+    public StandardReservationBuilder setIsGroup(boolean isGroup) {
+        this.isGroup = isGroup;
+        return this;
+    }
+
+    public StandardReservationBuilder setCustomerName(String customerName) {
+        this.customerName = customerName;
         return this;
     }
 
@@ -50,8 +57,9 @@ public class StandardReservationBuilder implements ReservationBuilder{
         reservation.setStartTime(this.startTime);
         reservation.setEndTime(this.endTime);
         reservation.setTableIds(this.tableIds);
-        reservation.setPeopleTotal(this.peopleTotal);
         reservation.setSpecialSetup(this.specialSetup);
+        reservation.setIsGroup(false);
+        reservation.setCustomerName(customerName);
         return reservation;
     }
 }

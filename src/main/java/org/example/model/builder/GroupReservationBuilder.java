@@ -10,6 +10,7 @@ public class GroupReservationBuilder implements ReservationBuilder {
     private StandardReservationBuilder standardBuilder = new StandardReservationBuilder();
     private List<Integer> groupTableIds = new ArrayList<>();
     private String specialSetup = null;
+    private boolean isGroup;
 
     @Override
     public GroupReservationBuilder setCustomerId(int customerId) {
@@ -35,8 +36,20 @@ public class GroupReservationBuilder implements ReservationBuilder {
         return this;
     }
 
+
     public GroupReservationBuilder setSpecialSetup(String specialSetup) {
         this.specialSetup = specialSetup;
+        return this;
+    }
+
+    @Override
+    public GroupReservationBuilder setIsGroup(boolean isGroup) {
+        this.isGroup = isGroup;
+        return this;
+    }
+
+    public GroupReservationBuilder setCustomerName(String customerName) {
+        standardBuilder.setCustomerName(customerName);
         return this;
     }
 
@@ -45,6 +58,7 @@ public class GroupReservationBuilder implements ReservationBuilder {
         Reservation reservation = standardBuilder.build();
         reservation.setTableIds(groupTableIds);
         reservation.setSpecialSetup(specialSetup);
+        reservation.setIsGroup(true);
         return reservation;
     }
 }

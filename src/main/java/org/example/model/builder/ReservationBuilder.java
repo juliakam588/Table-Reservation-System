@@ -15,4 +15,7 @@ public interface ReservationBuilder {
     Reservation build();
 
     ReservationBuilder setSpecialSetup(String specialSetup);
+    ReservationBuilder setIsGroup(boolean isGroup);
+    ReservationBuilder setCustomerName(String customerName);
+
 }
