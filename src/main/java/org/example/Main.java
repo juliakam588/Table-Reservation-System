@@ -10,7 +10,6 @@ import org.example.model.dao.CustomerDAO;
 import org.example.model.dao.ReservationDAO;
 import org.example.model.dao.TableDAO;
 import org.example.model.singleton.DatabaseConnection;
-import org.example.view.CLI;
 import org.example.view.CustomerView;
 import org.example.view.ReservationView;
 import org.example.view.TableView;
@@ -48,6 +47,6 @@ public class Main {
         ReservationController reservationController =new ReservationController(reservationService,reservationView);
         CustomerController customerController = new CustomerController(customerService,customerView);
         TableController tableController = new TableController(tableService, tableView);
-        return new CLI(reservationController,customerController,tableController, customerView, reservationView, tableView);
+        return new CLI(reservationController,customerController,tableController);
     }
 }
