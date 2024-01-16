@@ -21,6 +21,8 @@ public class TableView {
         System.out.printf("%-" + STATUS_WIDTH + "s", status);
 
         System.out.println();
+    }    public void displayMessage(String message) {
+        System.out.println(message);
     }
 
     public int getCapacityFromUser() {

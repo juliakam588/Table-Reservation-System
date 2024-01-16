@@ -17,26 +17,36 @@ public class TableController {
     }
 
 
-    public void addTable(int capacity) {
+    public void addTable() {
         try {
-            tableService.addTable(capacity);
-            System.out.println("Table with capacity " + capacity + " added successfully to the database.");
-
+            int tableCapacity = tableView.getCapacityFromUser();
+            String result = tableService.addTable(tableCapacity);
+            tableView.displayMessage(result);
         } catch (Exception e) {
-            System.out.println("Failed to add table: " + e.getMessage());
+            tableView.displayMessage("Failed to add table: " + e.getMessage());
         }
     }
 
-    public void deleteTable(int tableId) {
+    public void deleteTable() {
         try {
-            tableService.deleteTable(tableId);
-            System.out.println("Table with ID " + tableId + " deleted successfully.");
+            int tableId = tableView.getTableIdToDelete();
+            String result = tableService.deleteTable(tableId);
+            tableView.displayMessage(result);
         } catch (Exception e) {
-            System.out.println("Failed to delete table: " + e.getMessage());
+            tableView.displayMessage("Failed to delete table: " + e.getMessage());
         }
     }
 
-    public void showAvailableTables() {
+    public void showTables() {
+        String option = tableView.getTableStatusTypeFromUser();
+        switch (option) {
+            case "a" -> showAllTables();
+            case "b" -> showAvailableTables();
+            default -> tableView.displayMessage("Invalid input");
+        }
+    }
+
+    private void showAvailableTables() {
         try {
             List<Table> availableTables = tableService.getAvailableTables();
             if (!availableTables.isEmpty()) {
@@ -49,7 +59,7 @@ public class TableController {
         }
     }
 
-    public void showAllTables() {
+    private void showAllTables() {
         try {
             List<Table> allTables = tableService.getAllTables();
             if (!allTables.isEmpty()) {
@@ -59,7 +69,7 @@ public class TableController {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Failed to display all tables: " + e.getMessage());
+            tableView.displayMessage("Failed to display all tables: " + e.getMessage());
         }
     }
 

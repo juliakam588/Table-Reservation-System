@@ -26,15 +26,18 @@ public class TableDAO implements DAO<Table>{
             if (resultSet.next()) {
                 int tableId = resultSet.getInt("id");
                 int capacity = resultSet.getInt("capacity");
+                boolean availability = resultSet.getBoolean("available");
 
                 Table table = new Table();
                 table.setId(tableId);
                 table.setCapacity(capacity);
+                table.setAvailable(availability);
+
 
                 return table;
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error fetching such table.");
         }
         return null;
     }
@@ -58,7 +61,7 @@ public class TableDAO implements DAO<Table>{
                 tables.add(table);
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error fetching all tables.");
         }
         return tables;
     }
@@ -94,14 +97,26 @@ public class TableDAO implements DAO<Table>{
     }
 
     public void delete(int id) {
-        String query = "DELETE FROM tables WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, id);
-            preparedStatement.executeUpdate();
+        String queryCheckExists = "SELECT COUNT(*) FROM tables WHERE id = ?";
+        String queryDeleteTable = "DELETE FROM tables WHERE id = ?";
+
+        try (PreparedStatement checkExistsStatement = connection.prepareStatement(queryCheckExists)) {
+            checkExistsStatement.setInt(1, id);
+            try (ResultSet resultSet = checkExistsStatement.executeQuery()) {
+                if (resultSet.next() && resultSet.getInt(1) == 0) {
+                    throw new RuntimeException("Table with ID " + id + " does not exist.");
+                }
+            }
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryDeleteTable)) {
+                preparedStatement.setInt(1, id);
+                preparedStatement.executeUpdate();
+            }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error deleting table", e);
         }
     }
+
 
     public List<Table> getAvailableTables() {
         List<Table> availableTables = new ArrayList<>();

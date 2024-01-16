@@ -14,29 +14,27 @@ public class TableService {
         this.tableDAO = tableDAO;
     }
 
-    public void addTable(int tableCapacity) {
+    public String addTable(int tableCapacity) {
         if (tableCapacity <= 0 || tableCapacity > MAX_TABLE_CAPACITY) {
-            System.out.println("Invalid table capacity. It must be a positive number up to " + MAX_TABLE_CAPACITY + ".");
-            return;
+            return "Invalid table capacity. It must be a positive number up to " + MAX_TABLE_CAPACITY + ".";
         }
         Table table = new Table();
         table.setCapacity(tableCapacity);
         tableDAO.insert(table);
+        return "Table with capacity " + tableCapacity + " added successfully to the database.";
     }
 
-    public void deleteTable(int tableId) {
+    public String deleteTable(int tableId) {
         Table tableToDelete = getTableById(tableId);
         if (tableToDelete == null) {
-            System.out.println("Table with ID " + tableId + " does not exist.");
-            return;
+            return "Table with ID " + tableId + " does not exist.";
         }
         if (!isTableAvailable(tableId)) {
-            System.out.println("Table with ID " + tableId + " is currently reserved and cannot be deleted.");
-            return;
+           return "Table with ID " + tableId + " is currently reserved and cannot be deleted.";
         }
         tableDAO.delete(tableId);
+        return "Table with ID " + tableId + " deleted successfully.";
     }
-
     public List<Table> getAvailableTables() {
         List<Table> availableTables = tableDAO.getAvailableTables();
         if(availableTables.isEmpty()) {
