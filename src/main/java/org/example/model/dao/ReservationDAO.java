@@ -47,7 +47,7 @@ public class ReservationDAO implements DAO<Reservation>{
 
 
     public void insertReservation(Reservation reservation, List<Integer> tableIds) {
-        String insertReservationQuery = "INSERT INTO reservations (customer_id, start_time, end_time) VALUES (?, ?, ?)";
+        String insertReservationQuery = "INSERT INTO reservations (customer_id, start_time, end_time, special_setup, is_group, customer_name) VALUES (?, ?, ?, ?, ?, ?)";
         PreparedStatement preparedStatement = null;
         PreparedStatement preparedStatementTable = null;
         PreparedStatement updateTableStatement = null;
@@ -59,6 +59,9 @@ public class ReservationDAO implements DAO<Reservation>{
             preparedStatement.setInt(1, reservation.getCustomerId());
             preparedStatement.setTimestamp(2, Timestamp.valueOf(reservation.getStartTime()));
             preparedStatement.setTimestamp(3, Timestamp.valueOf(reservation.getEndTime()));
+            preparedStatement.setString(4, reservation.getSpecialSetup());
+            preparedStatement.setBoolean(5, reservation.getIsGroup());
+            preparedStatement.setString(6, reservation.getCustomerName());
             int affectedRows = preparedStatement.executeUpdate();
             if (affectedRows == 0) {
                 throw new SQLException("Creating reservation failed, no rows affected.");
@@ -120,7 +123,10 @@ public class ReservationDAO implements DAO<Reservation>{
                 preparedStatement.setInt(1, reservation.getCustomerId());
                 preparedStatement.setTimestamp(2, Timestamp.valueOf(reservation.getStartTime()));
                 preparedStatement.setTimestamp(3, Timestamp.valueOf(reservation.getEndTime()));
-                preparedStatement.setInt(4, reservation.getId());
+                preparedStatement.setString(4, reservation.getSpecialSetup());
+                preparedStatement.setBoolean(5, reservation.getIsGroup());
+                preparedStatement.setString(6, reservation.getCustomerName());
+                preparedStatement.setInt(7, reservation.getId());
                 preparedStatement.executeUpdate();
             }
 
@@ -150,11 +156,22 @@ public class ReservationDAO implements DAO<Reservation>{
     }
 
     public void delete(int id) {
+        String queryCheckExists = "SELECT COUNT(*) FROM reservations WHERE id = ?";
         String queryDeleteReservation = "DELETE FROM reservations WHERE id = ?";
         String queryDeleteReservationTables = "DELETE FROM reservation_tables WHERE reservation_id = ?";
         String queryUpdateTables = "UPDATE tables SET available = TRUE WHERE id IN (SELECT table_id FROM reservation_tables WHERE reservation_id = ?)";
         try {
             connection.setAutoCommit(false);
+
+            try (PreparedStatement checkExistsStatement = connection.prepareStatement(queryCheckExists)) {
+                checkExistsStatement.setInt(1, id);
+                try (ResultSet resultSet = checkExistsStatement.executeQuery()) {
+                    if (resultSet.next() && resultSet.getInt(1) == 0) {
+                        throw new RuntimeException("Reservation with ID " + id + " does not exist.");
+                    }
+                }
+            }
+
 
             try (PreparedStatement updateTablesStatement = connection.prepareStatement(queryUpdateTables)) {
                 updateTablesStatement.setInt(1, id);
@@ -188,6 +205,9 @@ public class ReservationDAO implements DAO<Reservation>{
         reservation.setCustomerId(resultSet.getInt("customer_id"));
         reservation.setStartTime(resultSet.getTimestamp("start_time").toLocalDateTime());
         reservation.setEndTime(resultSet.getTimestamp("end_time").toLocalDateTime());
+        reservation.setSpecialSetup(resultSet.getString("special_setup"));
+        reservation.setIsGroup(resultSet.getBoolean("is_group"));
+        reservation.setCustomerName(resultSet.getString("customer_name"));
         reservation.setTableIds(getTableIdsForReservation(reservation.getId()));
 
         return reservation;

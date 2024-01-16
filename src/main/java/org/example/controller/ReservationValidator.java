@@ -14,13 +14,12 @@ public class ReservationValidator {
     public boolean isWithinBusinessHours(LocalDateTime startTime, LocalDateTime endTime) {
         LocalTime start = startTime.toLocalTime();
         LocalTime end = endTime.toLocalTime();
-        LocalTime closingTime = CLOSE_TIME;
 
         if (!startTime.toLocalDate().isEqual(endTime.toLocalDate())) {
-            closingTime = LocalTime.MAX;
+            return false;
         }
 
-        return !start.isBefore(OPEN_TIME) && !end.isAfter(closingTime) && start.isBefore(end);
+        return !start.isBefore(OPEN_TIME) && !end.isAfter(CLOSE_TIME) && start.isBefore(end);
     }
     public boolean validateReservationParameters(Map<String, Object> parameters) {
         if (!validateCustomerInformation(parameters.get("customerName"), parameters.get("contactInfo"))) {

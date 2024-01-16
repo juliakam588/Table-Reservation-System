@@ -11,6 +11,7 @@ public class ReservationView {
     private Scanner scanner = new Scanner(System.in);
     private static final int ID_WIDTH = 15;
     private static final int CUSTOMER_ID_WIDTH = 15;
+    private static final int CUSTOMER_NAME_WIDTH = 25;
     private static final int TIME_WIDTH = 20;
     private static final int TABLE_IDS_WIDTH = 25;
     private static final int SPECIAL_STATUS_WIDTH = 15;
@@ -18,6 +19,7 @@ public class ReservationView {
     public void displayMainRow() {
         System.out.printf("%-" + ID_WIDTH + "s", "Reservation ID");
         System.out.printf("%-" + CUSTOMER_ID_WIDTH + "s", "Customer ID");
+        System.out.printf("%-" + CUSTOMER_NAME_WIDTH + "s", "Customer Name");
         System.out.printf("%-" + TIME_WIDTH + "s", "Start Time");
         System.out.printf("%-" + TIME_WIDTH + "s", "End Time");
         System.out.printf("%-" + TABLE_IDS_WIDTH + "s", "Table Id(s)");
@@ -26,17 +28,26 @@ public class ReservationView {
     }
 
 
-    public void displayReservation(int reservationId, int customerId, String startTime, String endTime, String tableIds, String specialStatus) {
+    public void displayReservation(int reservationId, int customerId, String startTime, String endTime, String tableIds, String specialStatus, boolean isGroup, String customerName) {
         System.out.printf("%-" + ID_WIDTH + "d", reservationId);
         System.out.printf("%-" + CUSTOMER_ID_WIDTH + "d", customerId);
+        System.out.printf("%-" + CUSTOMER_NAME_WIDTH + "s", customerName);
         System.out.printf("%-" + TIME_WIDTH + "s", startTime);
         System.out.printf("%-" + TIME_WIDTH + "s", endTime);
         System.out.printf("%-" + TABLE_IDS_WIDTH + "s", tableIds);
-        System.out.printf("%-" + SPECIAL_STATUS_WIDTH + "s", specialStatus);
+        if (isGroup) {
+            System.out.printf("%-" + SPECIAL_STATUS_WIDTH + "s", specialStatus);
+        } else {
+            System.out.printf("%-" + SPECIAL_STATUS_WIDTH + "s", "N/A");
+        }
+
 
         System.out.println();
     }
 
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
 
     public Map<String, Object> getNewReservationData() {
         String customerName = getStringInput("Enter customer name: ");
@@ -45,6 +56,10 @@ public class ReservationView {
         LocalDateTime endTime = getDateTimeInput("Enter end time (yyyy-MM-ddTHH:mm): ");
         int peopleTotal = getPositiveIntegerInput("How many people? ");
         boolean isGroup = getBooleanInput("Is this a group reservation? (yes/no): ");
+        String specialSetup = "-";
+        if (isGroup) {
+            specialSetup = getStringInput("Enter special setup details for group reservation: ");
+        }
 
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("customerName", customerName);
@@ -53,6 +68,7 @@ public class ReservationView {
         parameters.put("endTime", endTime);
         parameters.put("peopleTotal", peopleTotal);
         parameters.put("isGroup", isGroup);
+        parameters.put("specialSetup", specialSetup);
         return parameters;
     }
 
@@ -61,6 +77,9 @@ public class ReservationView {
         return scanner.nextLine();
     }
 
+    public String getCustomerNameForReservations() {
+        return getStringInput("Enter customer name to find: ");
+    }
     private LocalDateTime getDateTimeInput(String prompt) {
         LocalDateTime dateTime;
         do {
@@ -110,5 +129,18 @@ public class ReservationView {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter reservation ID to delete: ");
         return Integer.parseInt(scanner.nextLine());
+    }
+
+    public String getReservationDisplayOption() {
+        Scanner scanner = new Scanner(System.in);
+        String input;
+        do {
+            System.out.println("a - show all reservations");
+            System.out.println("b - show only current reservations");
+            System.out.println("c - show reservations of a particular customer");
+            System.out.print("Enter your choice: ");
+            input = scanner.nextLine().trim().toLowerCase();
+        } while (!input.equals("a") && !input.equals("b") && !input.equals("c"));
+        return input;
     }
 }
