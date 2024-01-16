@@ -76,10 +76,21 @@ public class CustomerDAO implements DAO<Customer>{
     }
 
     public void delete(int id) {
-        String query = "DELETE FROM customers WHERE id = ?";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, id);
-            preparedStatement.executeUpdate();
+        String queryCheckExists = "SELECT COUNT(*) FROM customers WHERE id = ?";
+        String queryDeleteCustomer = "DELETE FROM customers WHERE id = ?";
+
+        try (PreparedStatement checkExistsStatement = connection.prepareStatement(queryCheckExists)) {
+            checkExistsStatement.setInt(1, id);
+            try (ResultSet resultSet = checkExistsStatement.executeQuery()) {
+                if (resultSet.next() && resultSet.getInt(1) == 0) {
+                    throw new RuntimeException("Customer with ID " + id + " does not exist.");
+                }
+            }
+
+            try (PreparedStatement preparedStatement = connection.prepareStatement(queryDeleteCustomer)) {
+                preparedStatement.setInt(1, id);
+                preparedStatement.executeUpdate();
+            }
         } catch (SQLException e) {
             throw new RuntimeException("Error deleting customer", e);
         }

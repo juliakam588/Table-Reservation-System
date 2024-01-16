@@ -17,12 +17,24 @@ public class CustomerController {
         this.customerView = customerView;
     }
 
-    public void addCustomer(Map<String, Object> parameters) {
-        customerService.addCustomer(parameters);
+    public void addCustomer() {
+        try {
+            Map<String, Object> parameters = customerView.getNewCustomerData();
+            String result = customerService.addCustomer(parameters);
+            customerView.displayMessage(result);
+        } catch (Exception e) {
+            customerView.displayMessage("Failed to add customer: " + e.getMessage());
+        }
     }
 
-    public void deleteCustomer(int customerId) {
-        customerService.deleteCustomer(customerId);
+    public void deleteCustomer() {
+        try {
+            int customerId = customerView.getCustomerIdToDelete();
+            String result = customerService.deleteCustomer(customerId);
+            customerView.displayMessage(result);
+        } catch(RuntimeException e) {
+            customerView.displayMessage("Error: " + e.getMessage());
+        }
     }
 
     public void showAllCustomers() {

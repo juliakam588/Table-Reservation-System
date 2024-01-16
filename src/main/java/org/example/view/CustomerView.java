@@ -26,7 +26,9 @@ public class CustomerView {
         System.out.printf("%-" + CONTACT_INFO_WIDTH + "s", contactInfo);
         System.out.println();
     }
-
+    public void displayMessage(String message) {
+        System.out.println(message);
+    }
     public Map<String, Object> getNewCustomerData() {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter customer name: ");

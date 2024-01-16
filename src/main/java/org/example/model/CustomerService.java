@@ -15,24 +15,28 @@ public class CustomerService {
         this.customerDAO = customerDAO;
     }
 
-    public boolean addCustomer(Map<String, Object> parameters) {
+    public String addCustomer(Map<String, Object> parameters) {
         String name = (String) parameters.get("customerName");
         String contactInfo = (String) parameters.get("contactInfo");
 
         if (!isValidInput(name, contactInfo)) {
-            return false;
+            return "Invalid customer details";
         }
 
         if (isCustomerExist(contactInfo)) {
-            System.out.println("Customer already exists.");
-            return false;
+            return "Customer already exists.";
+
         }
 
         return createAndInsertCustomer(name, contactInfo);
     }
 
-    public void deleteCustomer(int customerId) {
+    public String deleteCustomer(int customerId) {
+        if(customerId < 0) {
+            return "Couldn't delete customer. Try again.";
+        }
         customerDAO.delete(customerId);
+        return "Customer deleted successfully.";
     }
 
     public List<Customer> getAllCustomers() {
@@ -60,13 +64,12 @@ public class CustomerService {
         }
     }
 
-    private boolean createAndInsertCustomer(String name, String contactInfo) {
+    private String createAndInsertCustomer(String name, String contactInfo) {
         Customer newCustomer = new Customer();
         newCustomer.setName(name);
         newCustomer.setContactInfo(contactInfo);
 
         customerDAO.insert(newCustomer);
-        System.out.println("Customer added successfully.");
-        return true;
+        return "Customer added successfully.";
     }
 }
