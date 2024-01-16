@@ -1,4 +1,4 @@
-package org.example.strategy;
+package org.example.strategy.table_allocation;
 
 import org.example.model.entities.Reservation;
 import org.example.model.entities.Table;
