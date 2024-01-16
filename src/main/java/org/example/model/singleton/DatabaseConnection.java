@@ -7,7 +7,6 @@ import java.sql.SQLException;
 public class DatabaseConnection {
     private static DatabaseConnection instance;
     private Connection connection;
-
     private static final String DATABASE_URL = "jdbc:postgresql://localhost:5432/postgres";
     private static final String USER = "postgres";
     private static final String PASSWORD = "pass";
@@ -16,7 +15,7 @@ public class DatabaseConnection {
         try {
             connection = DriverManager.getConnection(DATABASE_URL, USER, PASSWORD);
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
     }
 
@@ -41,7 +40,7 @@ public class DatabaseConnection {
                 connection.close();
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage());
         }
     }
 }
