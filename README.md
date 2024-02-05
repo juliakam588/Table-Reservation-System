@@ -124,7 +124,7 @@ Each package is designed to be as independent as possible, following the princip
 
 ## ERD
 
-
+![table-reservation-erd](https://github.com/juliakam588/Table-Reservation-System/assets/77432872/fbdcf5b2-53d8-476f-a7ab-ec44c45448f9)
 
 ## Credits
 Created by Julia Kamuda. Contact: julka.kamuda@gmail.com
